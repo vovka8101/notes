@@ -1,4 +1,3 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
@@ -9,6 +8,7 @@ import { db, notesCollection } from "./firebase";
 export default function App() {
   const [notes, setNotes] = useState([]);
   const [currentNoteId, setCurrentNoteId] = useState("");
+  const [tempNoteText, setTempNoteText] = useState("");
 
   const currentNote =
     notes.find(note => note.id === currentNoteId)
@@ -34,6 +34,20 @@ export default function App() {
       setCurrentNoteId(notes[0]?.id);
     }
   }, [notes]);
+
+  useEffect(() => {
+    setTempNoteText(currentNote?.body);
+  }, [currentNote]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (currentNote.body !== tempNoteText) {
+        updateNote(tempNoteText);
+      }
+    }, 500)
+
+    return () => clearTimeout(timeoutId);
+  }, [tempNoteText]);
 
   async function createNewNote() {
     // we don't need id for this object, 
@@ -80,8 +94,8 @@ export default function App() {
               deleteNote={deleteNote}
             />
             <Editor
-              currentNote={currentNote}
-              updateNote={updateNote}
+              tempNoteText={tempNoteText}
+              setTempNoteText={setTempNoteText}
             />
           </Split>
           :
